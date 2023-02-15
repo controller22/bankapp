@@ -1,0 +1,10 @@
+.user-box {
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.list-box {
+    margin-top: 20px;
+    border: 1px solid black;
+    padding: 10px;
+}
