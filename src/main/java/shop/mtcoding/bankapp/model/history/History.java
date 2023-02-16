@@ -10,7 +10,7 @@ import lombok.Setter;
 public class History {
     private Integer id;
     private Long amount;
-    private Long wBlanace; // 출금계좌 잔액
+    private Long wBalance; // 출금계좌 잔액
     private Long dBalance; // 입금계좌 잔액
     private Integer wAccountId;
     private Integer dAccountId;
