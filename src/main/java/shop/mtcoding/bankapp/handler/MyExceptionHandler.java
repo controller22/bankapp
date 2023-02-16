@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import shop.mtcoding.bankapp.handler.ex.CustomException;
 
 @RestControllerAdvice
-public class MyExceptionHanlder {
+public class MyExceptionHandler {
 
     // 자바스크립트를 응답
     @ExceptionHandler(CustomException.class)
