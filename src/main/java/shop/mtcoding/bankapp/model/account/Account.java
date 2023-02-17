@@ -18,6 +18,12 @@ public class Account {
     private Integer userId;
     private Timestamp createdAt;
 
+    public void checkOwner(Integer principalId) {
+        if (userId != principalId) {
+            throw new CustomException("계좌 소유자가 아닙니다", HttpStatus.FORBIDDEN);
+        }
+    }
+
     public void withdraw(Long amount) {
         this.balance = this.balance - amount;
     }

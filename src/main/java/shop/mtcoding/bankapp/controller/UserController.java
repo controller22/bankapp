@@ -102,4 +102,10 @@ public class UserController {
     public String loginForm() {
         return "user/loginForm";
     }
+
+    @GetMapping("/logout")
+    public String logout() {
+        session.invalidate();
+        return "redirect:/";
+    }
 }
