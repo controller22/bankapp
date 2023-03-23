@@ -41,9 +41,10 @@ public class AccountController {
     @Autowired
     private HistoryRepository historyRepository;
 
-    @GetMapping("/account/{id}")
+    @GetMapping({ "/account/{id}", "/account/{id}/{page}" })
     public String detail(@PathVariable int id,
-            @RequestParam(name = "gubun", defaultValue = "all") String gubun, Model model) {
+            @RequestParam(name = "gubun", defaultValue = "all") String gubun, Model model,
+            @PathVariable(required = false) Integer page) {
 
         // 1. 인증체크
 
@@ -58,6 +59,7 @@ public class AccountController {
             throw new CustomException("해당 계좌를 볼 수 있는 권한이 없습니다",
                     HttpStatus.FORBIDDEN);
         }
+
         List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id);
         model.addAttribute("aDto", aDto);
         model.addAttribute("hDtoList", hDtoList);
