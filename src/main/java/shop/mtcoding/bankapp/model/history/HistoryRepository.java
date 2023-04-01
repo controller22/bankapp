@@ -9,8 +9,11 @@ import shop.mtcoding.bankapp.dto.history.HistoryRespDto;
 
 @Mapper
 public interface HistoryRepository {
+    
     public List<HistoryRespDto> findByGubun(@Param("gubun") String gubun,
-            @Param("accountId") int accountId);
+    @Param("accountId") int accountId,@Param("pageStart") int pageStart,@Param("perPageNum") int perPageNum);
+    
+    public int historyListCnt(@Param("gubun") String gubun, @Param("accountId") int accountId);
 
     public int gubun(History history);
 
@@ -23,4 +26,5 @@ public interface HistoryRepository {
     public List<History> findAll();
 
     public History findById(int id);
+ 
 }

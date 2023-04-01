@@ -14,5 +14,15 @@ INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id,
 INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 700, 1100, 1, 2, now());
 INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 800, null, 1, null, now());
 INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, null, 900, null, 1, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 600, 1300, 1, 2, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 700, null, 1, null, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, null, 800, null, 1, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 700, 1200, 1, 2, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 800, null, 1, null, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, null, 900, null, 1, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, null, 800, null, 1, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 700, 1100, 1, 2, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, 800, null, 1, null, now());
+INSERT INTO history_tb(amount, w_balance, d_balance, w_account_id, d_account_id, created_at) values(100, null, 900, null, 1, now());
 
 commit;
