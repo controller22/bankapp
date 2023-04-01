@@ -4,14 +4,18 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.h2.mvstore.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import shop.mtcoding.bankapp.dto.account.AccountDepositReqDto;
 import shop.mtcoding.bankapp.dto.account.AccountDetailRespDto;
@@ -24,6 +28,8 @@ import shop.mtcoding.bankapp.model.account.Account;
 import shop.mtcoding.bankapp.model.account.AccountRepository;
 import shop.mtcoding.bankapp.model.history.HistoryRepository;
 import shop.mtcoding.bankapp.model.user.User;
+import shop.mtcoding.bankapp.paging.Criteria;
+import shop.mtcoding.bankapp.paging.Paging;
 import shop.mtcoding.bankapp.service.AccountService;
 
 @Controller
@@ -41,10 +47,9 @@ public class AccountController {
     @Autowired
     private HistoryRepository historyRepository;
 
-    @GetMapping({ "/account/{id}", "/account/{id}/{page}" })
-    public String detail(@PathVariable int id,
-            @RequestParam(name = "gubun", defaultValue = "all") String gubun, Model model,
-            @PathVariable(required = false) Integer page) {
+    @GetMapping("/account/{id}")
+    public String detail(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
+     Model model, @RequestParam(name = "page", defaultValue = "1") Integer page) {
 
         // 1. 인증체크
 
@@ -59,12 +64,113 @@ public class AccountController {
             throw new CustomException("해당 계좌를 볼 수 있는 권한이 없습니다",
                     HttpStatus.FORBIDDEN);
         }
+       
+        // 전체 글 개수
+        double historyListCnt = historyRepository.historyListCnt(gubun, id);
+        double lastpage = Math.ceil(historyListCnt/5);
 
-        List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id);
-        model.addAttribute("aDto", aDto);
+
+        Criteria cri = new Criteria(page);
+        List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+        
+        // 페이징 객체
+        Paging paging = new Paging(page);
+         
+        cri.setPage(page); 
+        
+        System.out.println( "test12 : " + lastpage);
+        // System.out.println("test8 "+paging.isPrev()); 
+        // System.out.println("test9 "+paging.getEndPage());
+        // System.out.println("test10 "+paging.getStartPage());
+
+        
+        model.addAttribute("cri",  cri);
+        model.addAttribute("lastpage",  lastpage);//이 값을 왜 못받아와?
+
+        model.addAttribute("paging",  paging);
+        model.addAttribute("aDto", aDto); 
         model.addAttribute("hDtoList", hDtoList);
+        
         return "account/detail";
     }
+
+    // @GetMapping("/api/account/{id}")
+    // public ResponseEntity<?> detailApi(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
+    //  Model model, @RequestParam(name = "page", defaultValue = "1") Integer page) {
+
+    //     // 1. 인증체크
+
+    //     User principal = (User) session.getAttribute("principal");
+    //     if (principal == null) {
+    //         return "redirect:/loginForm";
+    //     }
+
+    //     // 2. 레파지토리 호출 (메서드를 3개 or 마이바티스 동적쿼리)
+    //     AccountDetailRespDto aDto = accountRepository.findByIdWithUser(id);
+    //     if (aDto.getUserId() != principal.getId()) {
+    //         throw new CustomException("해당 계좌를 볼 수 있는 권한이 없습니다",
+    //                 HttpStatus.FORBIDDEN);
+    //     }
+       
+    //     // 전체 글 개수
+    //     double historyListCnt = historyRepository.historyListCnt(gubun, id);
+    //     double lastpage = Math.ceil(historyListCnt/5);
+
+
+    //     Criteria cri = new Criteria(page);
+    //     List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+        
+    //     // 페이징 객체
+    //     Paging paging = new Paging(page);
+         
+    //     cri.setPage(page); 
+        
+    //     System.out.println( "test12 : " + lastpage);
+    //     // System.out.println("test8 "+paging.isPrev()); 
+    //     // System.out.println("test9 "+paging.getEndPage());
+    //     // System.out.println("test10 "+paging.getStartPage());
+
+        
+    //     model.addAttribute("cri",  cri);
+    //     model.addAttribute("lastpage",  lastpage);//이 값을 왜 못받아와?
+
+    //     model.addAttribute("paging",  paging);
+    //     model.addAttribute("aDto", aDto); 
+    //     model.addAttribute("hDtoList", hDtoList);
+        
+    //     return "account/detail";
+    // }
+
+    @GetMapping("/account/{id}/next")
+    @ResponseBody
+    public List<HistoryRespDto> getNextPage(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
+    Model model, Integer page) {
+
+        int historyListCnt = historyRepository.historyListCnt(gubun, id);
+        // int lastpage =Math.round(historyListCnt/5)-1;
+        // System.out.println("test11 "+lastpage);
+        
+        Paging paging = new Paging(page);
+        Criteria cri = new Criteria(page);
+        List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+        
+        paging.setCri(cri);
+        paging.setTotalCount(historyListCnt);    
+        
+        System.out.println( "test1 : " + cri.getPage());
+
+        
+        model.addAttribute("cri",  cri);
+        // model.addAttribute("lastpage",  lastpage);
+        model.addAttribute("paging",  paging);
+        model.addAttribute("hDtoList", hDtoList);
+        
+        
+        return hDtoList;
+    }
+
+  
+
 
     @PostMapping("/account/transfer")
     public String transfer(AccountTransferReqDto accountTransferReqDto) {
