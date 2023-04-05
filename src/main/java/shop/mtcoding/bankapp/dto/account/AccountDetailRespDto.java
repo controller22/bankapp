@@ -1,6 +1,5 @@
 package shop.mtcoding.bankapp.dto.account;
 
-import java.sql.Timestamp;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,4 +12,5 @@ public class AccountDetailRespDto {
     private Long balance;
     private Integer userId;
     private String fullname;
+
 }
