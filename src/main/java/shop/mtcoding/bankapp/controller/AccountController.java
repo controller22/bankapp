@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,6 +25,7 @@ import shop.mtcoding.bankapp.dto.account.AccountSaveReqDto;
 import shop.mtcoding.bankapp.dto.account.AccountTransferReqDto;
 import shop.mtcoding.bankapp.dto.account.AccountWithdrawReqDto;
 import shop.mtcoding.bankapp.dto.history.HistoryRespDto;
+import shop.mtcoding.bankapp.dto.search.DetailSearchRespDto;
 import shop.mtcoding.bankapp.handler.ex.CustomException;
 import shop.mtcoding.bankapp.model.account.Account;
 import shop.mtcoding.bankapp.model.account.AccountRepository;
@@ -31,6 +33,7 @@ import shop.mtcoding.bankapp.model.history.HistoryRepository;
 import shop.mtcoding.bankapp.model.user.User;
 import shop.mtcoding.bankapp.paging.Criteria;
 import shop.mtcoding.bankapp.service.AccountService;
+import shop.mtcoding.bankapp.service.HistoryService;
 
 @Controller
 @RequiredArgsConstructor
@@ -47,6 +50,9 @@ public class AccountController {
 
     @Autowired
     private HistoryRepository historyRepository;
+
+    @Autowired
+    private HistoryService historyService;
 
     @GetMapping("/account/{id}")
     public String detail(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun) {
@@ -100,26 +106,51 @@ public class AccountController {
       return new ResponseEntity<>(new ResponseDto<>(1, "거래내역 불러오기 성공", accountDetailPageRespDto), HttpStatus.OK);
     }
 
-
-
-
-    @GetMapping("/api/account/{id}/next")
+    
+    @PostMapping("/api/account/{id}/next")
     @ResponseBody
-    public List<HistoryRespDto> getNextPage(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
-    Model model, Integer page) {
-
+    public ResponseEntity<?>  getNextPage (@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
+    Integer page) {
         Criteria cri = new Criteria(page);
-        List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+        // if (detailSearchRespDto.getSearchString()!=null) {
+            // List<DetailSearchRespDto> detailList = historyService.거래내역검색(detailSearchRespDto.getGubun(), id, 
+            // cri.getPageStart(), cri.getPerPageNum(), detailSearchRespDto.getSearchString(),detailSearchRespDto.getLocalPage());
+            // System.out.println("디버깅122 : "+detailSearchRespDto.getSearchString());
+            // return new ResponseEntity<>(new ResponseDto<>(1, "검색 성공", detailList),
+            //         HttpStatus.OK);
+        // }
+            List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+            System.out.println("디버깅 00 "+cri.getPageStart());
+    
+            return new ResponseEntity<>(new ResponseDto<>(1, "검색 성공", hDtoList),
+                    HttpStatus.OK);   
+       
+        }
+    
 
+
+
+
+    @PostMapping("/api/account/{id}/search")
+    public ResponseEntity<?> searchList(@PathVariable int id, @RequestParam(name = "page", defaultValue = "1")
+    Integer page, @RequestBody DetailSearchRespDto detailSearchRespDto) {
         
-        model.addAttribute("cri",  cri);
-        model.addAttribute("hDtoList", hDtoList);
+        System.out.println("디버깅123 "+page);
+        
+        Criteria cri = new Criteria(page);
         
         
-        return hDtoList;
+        List<DetailSearchRespDto> detailList = historyService.거래내역검색(detailSearchRespDto.getGubun(), id, 
+        cri.getPageStart(), cri.getPerPageNum(), detailSearchRespDto.getSearchString(),detailSearchRespDto.getLocalPage());
+
+        return new ResponseEntity<>(new ResponseDto<>(1, "검색 성공", detailList),
+                HttpStatus.OK);
     }
 
-  
+
+
+
+
 
 
     @PostMapping("/account/transfer")

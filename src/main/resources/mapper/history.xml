@@ -50,8 +50,53 @@
         LIMIT #{pageStart}, #{perPageNum}
     </if>
     </select>
-
     
+    <select id="findBySender"
+    resultType="shop.mtcoding.bankapp.dto.search.DetailSearchRespDto">
+    <if test="gubun == 'withdraw'">
+     
+        SELECT ht.id, ht.amount, ht.w_balance balance, wat.number sender, 'ATM'
+        receiver, ht.created_at
+        FROM history_tb ht
+        INNER JOIN account_tb wat
+        ON ht.w_account_id = wat.id
+        WHERE 'ATM' like CONCAT('%',#{searchString},'%')
+        ORDER BY id asc
+        LIMIT #{pageStart}, #{perPageNum}
+    </if>
+    <if test="gubun == 'deposit'">
+    
+        SELECT ht.id, ht.amount, ht.d_balance balance, 'ATM' sender, dat.number
+        receiver, ht.created_at
+        FROM history_tb ht
+        INNER JOIN account_tb dat
+        ON ht.d_account_id = dat.id
+        WHERE dat.number like CONCAT('%',#{searchString},'%')
+        ORDER BY id asc
+        LIMIT #{pageStart}, #{perPageNum}
+    </if>
+    <if test="gubun == 'all'">
+    
+        SELECT
+        ht.id,
+        ht.amount,
+        nvl(wat.number, 'ATM') sender,
+        nvl(dat.number, 'ATM') receiver,
+        case when wat.id = 1 then ht.w_balance
+        when dat.id = 1 then ht.d_balance
+        end as balance,
+        ht.created_at
+        FROM history_tb ht
+        LEFT OUTER JOIN account_tb wat
+        ON ht.w_account_id = wat.id
+        LEFT OUTER JOIN account_tb dat
+        ON ht.d_account_id = dat.id
+        WHERE (ht.w_account_id = #{accountId} or ht.d_account_id = #{accountId})
+             and dat.number like CONCAT('%',#{searchString},'%')
+        ORDER BY id asc
+        LIMIT #{pageStart}, #{perPageNum}
+    </if>
+    </select>
 
     <select id="historyListCnt" resultType="int">
         <if test="gubun == 'withdraw'">
