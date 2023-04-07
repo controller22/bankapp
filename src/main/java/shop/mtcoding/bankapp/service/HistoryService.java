@@ -14,13 +14,11 @@ public class HistoryService {
     @Autowired
     HistoryRepository historyRepository;
 
-    public List<DetailSearchRespDto> 거래내역검색(String gubun, int id, int PageStart,
-    int PerPageNum,  String SearchString,Integer localpage) {
-        System.out.println("디버깅22222");
-        List<DetailSearchRespDto> detailList = historyRepository.findBySender(gubun, id, PageStart, PerPageNum,
-        SearchString, localpage);
-        System.out.println("디버깅22222");
-return detailList;
+    public List<DetailSearchRespDto> 거래내역검색(String gubun, int id, int PageStart, int PerPageNum,  String SearchString) {
+        
+        List<DetailSearchRespDto> detailList = historyRepository.findBySender(gubun, id, PageStart, PerPageNum, SearchString);
+
+        return detailList;
 }
 
 }

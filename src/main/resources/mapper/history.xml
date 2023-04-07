@@ -60,7 +60,7 @@
         FROM history_tb ht
         INNER JOIN account_tb wat
         ON ht.w_account_id = wat.id
-        WHERE 'ATM' like CONCAT('%',#{searchString},'%')
+        WHERE ht.w_account_id = #{accountId} and 'ATM' like CONCAT('%',#{searchString},'%')
         ORDER BY id asc
         LIMIT #{pageStart}, #{perPageNum}
     </if>
@@ -71,7 +71,7 @@
         FROM history_tb ht
         INNER JOIN account_tb dat
         ON ht.d_account_id = dat.id
-        WHERE dat.number like CONCAT('%',#{searchString},'%')
+        WHERE ht.d_account_id = #{accountId} and dat.number like CONCAT('%',#{searchString},'%')
         ORDER BY id asc
         LIMIT #{pageStart}, #{perPageNum}
     </if>
@@ -97,6 +97,36 @@
         LIMIT #{pageStart}, #{perPageNum}
     </if>
     </select>
+
+
+     <select id="historyListCnt1" resultType="int">
+        <if test="gubun == 'withdraw'">
+        SELECT count(*)
+        FROM history_tb ht
+        INNER JOIN account_tb wat
+        ON ht.w_account_id = wat.id
+        WHERE ht.w_account_id = #{accountId} and 'ATM' like CONCAT('%',#{searchString},'%')
+        </if>
+        <if test="gubun == 'deposit'">
+        SELECT count(*)
+        FROM history_tb ht
+        INNER JOIN account_tb dat
+        ON ht.d_account_id = dat.id
+        WHERE ht.d_account_id = #{accountId} and dat.number like CONCAT('%',#{searchString},'%')
+        </if>
+        <if test="gubun == 'all'">
+        SELECT count(*)
+        FROM history_tb ht
+        LEFT OUTER JOIN account_tb wat
+        ON ht.w_account_id = wat.id
+        LEFT OUTER JOIN account_tb dat
+        ON ht.d_account_id = dat.id
+        WHERE (ht.w_account_id = #{accountId} or ht.d_account_id = #{accountId})
+             and dat.number like CONCAT('%',#{searchString},'%')
+        </if>
+    </select>
+
+
 
     <select id="historyListCnt" resultType="int">
         <if test="gubun == 'withdraw'">

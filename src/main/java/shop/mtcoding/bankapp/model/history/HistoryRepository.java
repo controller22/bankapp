@@ -13,8 +13,7 @@ public interface HistoryRepository {
 
     public List<DetailSearchRespDto> findBySender(@Param("gubun") String gubun,
                         @Param("accountId") int accountId, @Param("pageStart") int pageStart,
-                        @Param("perPageNum") int perPageNum, @Param("searchString") String searchString,
-                        @Param("localpage") Integer localpage);
+                        @Param("perPageNum") int perPageNum, @Param("searchString") String searchString);
 
 
     
@@ -34,5 +33,10 @@ public interface HistoryRepository {
     public List<History> findAll();
 
     public History findById(int id);
+
+
+
+    public int historyListCnt1(@Param("gubun") String gubun, @Param("accountId") int accountId,
+    @Param("searchString") String searchString);
  
 }
