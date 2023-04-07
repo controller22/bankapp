@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,6 +25,8 @@ import shop.mtcoding.bankapp.dto.account.AccountSaveReqDto;
 import shop.mtcoding.bankapp.dto.account.AccountTransferReqDto;
 import shop.mtcoding.bankapp.dto.account.AccountWithdrawReqDto;
 import shop.mtcoding.bankapp.dto.history.HistoryRespDto;
+import shop.mtcoding.bankapp.dto.search.DetailSearchAllRespDto;
+import shop.mtcoding.bankapp.dto.search.DetailSearchRespDto;
 import shop.mtcoding.bankapp.handler.ex.CustomException;
 import shop.mtcoding.bankapp.model.account.Account;
 import shop.mtcoding.bankapp.model.account.AccountRepository;
@@ -31,6 +34,7 @@ import shop.mtcoding.bankapp.model.history.HistoryRepository;
 import shop.mtcoding.bankapp.model.user.User;
 import shop.mtcoding.bankapp.paging.Criteria;
 import shop.mtcoding.bankapp.service.AccountService;
+import shop.mtcoding.bankapp.service.HistoryService;
 
 @Controller
 @RequiredArgsConstructor
@@ -47,6 +51,9 @@ public class AccountController {
 
     @Autowired
     private HistoryRepository historyRepository;
+
+    @Autowired
+    private HistoryService historyService;
 
     @GetMapping("/account/{id}")
     public String detail(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun) {
@@ -92,34 +99,71 @@ public class AccountController {
       List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());    
       
       AccountDetailPageRespDto accountDetailPageRespDto = new AccountDetailPageRespDto(hDtoList, aDto, lastpage);
-        
-      System.out.println("lastpage : "+accountDetailPageRespDto.getLastpage());
-      System.out.println("fullname : "+accountDetailPageRespDto.getADto().getFullname());
-      System.out.println("HDtoList : "+accountDetailPageRespDto.getHDtoList().get(id).getReceiver());
 
       return new ResponseEntity<>(new ResponseDto<>(1, "거래내역 불러오기 성공", accountDetailPageRespDto), HttpStatus.OK);
     }
 
-
-
-
+    
     @GetMapping("/api/account/{id}/next")
-    @ResponseBody
-    public List<HistoryRespDto> getNextPage(@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
-    Model model, Integer page) {
-
+    // @ResponseBody
+    public ResponseEntity<?>  getNextPage (@PathVariable int id, @RequestParam(name = "gubun", defaultValue = "all") String gubun,
+    Integer page) {
         Criteria cri = new Criteria(page);
-        List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+            List<HistoryRespDto> hDtoList = historyRepository.findByGubun(gubun, id, cri.getPageStart(), cri.getPerPageNum());
+            return new ResponseEntity<>(new ResponseDto<>(1, "페이지넘기기 성공", hDtoList),
+                    HttpStatus.OK);   
+        }
 
+    
+    @PostMapping("/api/account/{id}/next1")
+    public ResponseEntity<?>  getNextPage1 (@PathVariable int id, Integer page, @RequestBody DetailSearchRespDto detailSearchRespDto) {
+        System.out.println("디버깅: "+detailSearchRespDto.getLocalPage());
+
+        Criteria cri = new Criteria(detailSearchRespDto.getLocalPage());
+        List<DetailSearchRespDto> detailList = historyService.거래내역검색(detailSearchRespDto.getGubun(), id, 
+        cri.getPageStart(), cri.getPerPageNum(), detailSearchRespDto.getSearchString());
+
+        System.out.println("디버깅11111111  "+detailSearchRespDto.getGubun());
+        System.out.println("디버깅11111111  "+id);
+        System.out.println("디버깅11111111  "+cri.getPageStart());
+        System.out.println("디버깅11111111  "+cri.getPerPageNum());
+        System.out.println("디버깅11111111  "+ detailSearchRespDto.getSearchString());
+
+        return new ResponseEntity<>(new ResponseDto<>(1, "페이지넘기기 성공", detailList),
+                HttpStatus.OK);
+       
+        }
+    
+
+
+
+
+    @PostMapping("/api/account/{id}/search")
+    public ResponseEntity<?> searchList(@PathVariable int id, @RequestParam(name = "page", defaultValue = "1")
+    Integer page, @RequestBody DetailSearchRespDto detailSearchRespDto) {
+        Criteria cri = new Criteria(page);
         
-        model.addAttribute("cri",  cri);
-        model.addAttribute("hDtoList", hDtoList);
+        System.out.println("디버깅11123  "+cri.getPageStart());
+
+        int historyListCnt1 = historyRepository.historyListCnt1(detailSearchRespDto.getGubun(), id, 
+        detailSearchRespDto.getSearchString());
         
+        double lastpage = Math.ceil((double)historyListCnt1/5);
         
-        return hDtoList;
+        System.out.println("디버깅11123 "+lastpage);      
+        
+        List<DetailSearchRespDto> detailList = historyService.거래내역검색(detailSearchRespDto.getGubun(), id, 
+        cri.getPageStart(), cri.getPerPageNum(), detailSearchRespDto.getSearchString());
+
+        DetailSearchAllRespDto dsaDto = new DetailSearchAllRespDto(detailList, lastpage);
+
+        return new ResponseEntity<>(new ResponseDto<>(1, "검색 성공", dsaDto),
+                HttpStatus.OK);
     }
 
-  
+
+
+
 
 
     @PostMapping("/account/transfer")
